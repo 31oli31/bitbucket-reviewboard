@@ -366,6 +366,9 @@ and reload the dashboard tab.
 - The dashboard never injects raw API data as HTML — all strings are escaped and URLs
   are restricted to `http(s)`.
 
-## License
+## Privacy & license
 
-MIT — see [LICENSE](LICENSE).
+- [Privacy Policy](PRIVACY.md) — what the extension stores and which requests
+  it sends (only to `api.bitbucket.org`). Use the URL below in the Mozilla
+  Add-ons submission form.
+- MIT — see [LICENSE](LICENSE).
