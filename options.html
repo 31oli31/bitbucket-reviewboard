@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ReviewBoard — Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="page-head">
+        <div class="brand">
+          <img src="icons/icon-48.png" alt="" width="46" height="46" />
+          <div>
+            <h1>ReviewBoard</h1>
+            <p class="sub">Open Bitbucket pull requests that still need a review.</p>
+          </div>
+        </div>
+        <a class="btn btn-ghost" href="dashboard.html" target="_blank" rel="noopener">Open wallboard ↗</a>
+      </header>
+
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+
+      <form id="settings-form" novalidate>
+        <section class="card">
+          <div class="card-head">
+            <h2>Bitbucket connection</h2>
+            <p>Read-only access is enough. The credentials never leave your browser except to call the Bitbucket Cloud API.</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="authMode">Authentication</label>
+              <select id="authMode" name="authMode">
+                <option value="basic">Email + API token (recommended)</option>
+                <option value="bearer">Access token (Bearer)</option>
+              </select>
+              <p class="hint">Email + token is the Atlassian account token from <code>id.atlassian.com</code>. Bearer is for repository, workspace or OAuth access tokens.</p>
+            </div>
+            <div class="field" id="username-field">
+              <label for="username">Atlassian account email</label>
+              <input id="username" name="username" type="email" autocomplete="off" spellcheck="false" placeholder="you@example.com" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="token">API token</label>
+            <div class="input-row">
+              <input id="token" name="token" type="password" autocomplete="off" spellcheck="false" placeholder="ATATT3x…" />
+              <button type="button" class="btn btn-small" id="toggle-token" aria-label="Show token">Show</button>
+            </div>
+            <p class="hint">
+              Create the token at <code>id.atlassian.com/manage-profile/security/api-tokens</code> with the scopes
+              <code>read:pullrequest:bitbucket</code>, <code>read:repository:bitbucket</code> and <code>read:account:bitbucket</code>.
+            </p>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="workspace">Workspace</label>
+              <input id="workspace" name="workspace" type="text" autocomplete="off" spellcheck="false" placeholder="acme" />
+            </div>
+            <div class="field">
+              <label for="repoSlug">Repository slug</label>
+              <input id="repoSlug" name="repoSlug" type="text" autocomplete="off" spellcheck="false" placeholder="demo" />
+            </div>
+          </div>
+          <p class="hint">
+            Pasting <code>https://bitbucket.org/acme/demo</code> into either field works too — the URL slug, not the display name.
+          </p>
+
+          <div class="field">
+            <label for="apiBaseUrl">API base URL</label>
+            <input id="apiBaseUrl" name="apiBaseUrl" type="url" autocomplete="off" spellcheck="false" placeholder="https://api.bitbucket.org/2.0" />
+            <p class="hint">Change only for a proxy or a test double. The browser will ask for host access.</p>
+          </div>
+
+          <div class="test-row">
+            <button type="button" class="btn" id="test">Test connection</button>
+            <span id="test-result" class="test-result" role="status" aria-live="polite"></span>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Appearance</h2>
+            <p>Theme and visual preferences for the wallboard and settings page.</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="theme">Theme</label>
+              <select id="theme" name="theme">
+                <option value="dark">Dark mode</option>
+                <option value="light">Light mode</option>
+                <option value="system">Follow system preference</option>
+              </select>
+              <p class="hint">You can also toggle themes directly on the dashboard with the sun/moon button or keyboard shortcut <code>T</code>.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Monitoring</h2>
+            <p>How often the wallboard polls Bitbucket and which pull requests are considered.</p>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="refreshSeconds">Refresh interval (seconds)</label>
+              <input id="refreshSeconds" name="refreshSeconds" type="number" min="15" max="3600" step="5" inputmode="numeric" />
+              <p class="hint">15–3600. Default 120s (2 min). Higher intervals avoid Bitbucket API rate limits.</p>
+            </div>
+            <div class="field">
+              <label for="maxPullRequests">Max pull requests per refresh</label>
+              <input id="maxPullRequests" name="maxPullRequests" type="number" min="1" max="100" step="1" inputmode="numeric" />
+              <p class="hint">Two API requests per shown PR (diff stats + build status). 25 is a good default.</p>
+            </div>
+          </div>
+
+          <div class="toggles">
+            <label class="toggle">
+              <input type="checkbox" id="includeDrafts" name="includeDrafts" />
+              <span class="track" aria-hidden="true"></span>
+              <span class="toggle-text">
+                <strong>Include draft pull requests</strong>
+                <span>Drafts are hidden by default.</span>
+              </span>
+            </label>
+
+            <label class="toggle">
+              <input type="checkbox" id="onlyRequestedReviewers" name="onlyRequestedReviewers" />
+              <span class="track" aria-hidden="true"></span>
+              <span class="toggle-text">
+                <strong>Only PRs with a pending reviewer</strong>
+                <span>Hides unreviewed PRs nobody was asked to review.</span>
+              </span>
+            </label>
+
+            <label class="toggle">
+              <input type="checkbox" id="treatStaleApprovalsAsUnapproved" name="treatStaleApprovalsAsUnapproved" />
+              <span class="track" aria-hidden="true"></span>
+              <span class="toggle-text">
+                <strong>Treat stale approvals as unapproved</strong>
+                <span>An approval given before the latest commit no longer clears the PR.</span>
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Filters &amp; Team</h2>
+            <p>Comma or newline separated. Matching is case-insensitive.</p>
+          </div>
+
+          <div class="field">
+            <label for="teamMembers">Team members (filter PRs and Scoreboard)</label>
+            <textarea id="teamMembers" name="teamMembers" rows="2" spellcheck="false" placeholder="a.mueller@example.com, jane.doe@example.com, john.smith@example.com"></textarea>
+            <p class="hint">Only show PRs involving these team members and only rank them on the Scoreboard. Supports email addresses (e.g. <code>a.mueller@example.com, jane.doe@example.com</code>), usernames or display names. Leave blank for all.</p>
+          </div>
+
+          <div class="field">
+            <label for="includeSourceBranches">Only include source branches (prefix / pattern)</label>
+            <textarea id="includeSourceBranches" name="includeSourceBranches" rows="2" spellcheck="false" placeholder="ABC-, feature/"></textarea>
+            <p class="hint">Example: <code>ABC-</code> — only PRs whose source branch contains one of these patterns are monitored. Leave blank to allow all branches.</p>
+          </div>
+
+          <div class="field">
+            <label for="excludeSourceBranches">Ignore source branches</label>
+            <textarea id="excludeSourceBranches" name="excludeSourceBranches" rows="2" spellcheck="false"></textarea>
+            <p class="hint">Example: <code>dependabot/, renovate/, wip/</code> — matches anywhere in the branch name.</p>
+          </div>
+
+          <div class="field">
+            <label for="excludeTitlePatterns">Ignore title keywords</label>
+            <textarea id="excludeTitlePatterns" name="excludeTitlePatterns" rows="2" spellcheck="false"></textarea>
+            <p class="hint">Example: <code>wip, do not merge, dnm</code></p>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Alerts</h2>
+            <p>Visual pulses always work. Sound needs one click on the dashboard first (browser autoplay policy).</p>
+          </div>
+
+          <div class="toggles">
+            <label class="toggle">
+              <input type="checkbox" id="pulseAlerts" name="pulseAlerts" />
+              <span class="track" aria-hidden="true"></span>
+              <span class="toggle-text">
+                <strong>Pulse new pull requests</strong>
+                <span>New PRs glow for a few seconds and get a NEW ribbon.</span>
+              </span>
+            </label>
+
+            <label class="toggle">
+              <input type="checkbox" id="soundAlerts" name="soundAlerts" />
+              <span class="track" aria-hidden="true"></span>
+              <span class="toggle-text">
+                <strong>Play a short sound</strong>
+                <span>Two-tone chime when a new PR appears.</span>
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Save settings</button>
+          <button type="button" class="btn" id="open-dashboard">Open wallboard</button>
+          <button type="button" class="btn btn-ghost" id="clear-cache">Clear API cache</button>
+          <button type="button" class="btn btn-ghost" id="reset">Reset to defaults</button>
+        </div>
+      </form>
+
+      <section class="card security">
+        <h2>Security &amp; privacy</h2>
+        <ul>
+          <li>The credentials are stored in <code>chrome.storage.local</code> — unencrypted, like every browser-extension secret. Use a read-only token and revoke it when the wallboard is retired.</li>
+          <li>Requests go directly from your browser to the configured API host. There is no proxy, analytics or telemetry.</li>
+          <li>On a shared wall monitor, keep the dashboard in full screen; the options page is not required on that machine after setup.</li>
+        </ul>
+      </section>
+    </div>
+
+    <script src="lib/browser-api.js"></script>
+    <script src="lib/bitbucket.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

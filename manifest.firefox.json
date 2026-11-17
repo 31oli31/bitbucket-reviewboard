@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "ReviewBoard — Bitbucket Review Monitor",
+  "short_name": "ReviewBoard",
+  "version": "1.1.0",
+  "description": "ReviewBoard: open Bitbucket Cloud pull requests that still need review. Auto-refreshing, light & dark theme, PR size indicators, ETag cached, CI aware.",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://api.bitbucket.org/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+  "background": {
+    "scripts": [
+      "lib/browser-api.js",
+      "lib/bitbucket.js",
+      "background.js"
+    ]
+  },
+  "action": {
+    "default_title": "ReviewBoard",
+    "default_popup": "dashboard.html?mode=popup",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "open-dashboard": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Open ReviewBoard in a new tab"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "pr-wallboard@example.local",
+      "strict_min_version": "128.0"
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'"
+  }
+}
