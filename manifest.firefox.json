@@ -52,8 +52,11 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "pr-wallboard@example.local",
-      "strict_min_version": "128.0"
+      "id": "{3438ffb8-1c9e-4d13-a0aa-6cc44cc86aeb}",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "content_security_policy": {
