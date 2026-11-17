@@ -49,23 +49,40 @@ No build step, no framework, no third-party dependencies — plain HTML/CSS/JS.
 
 ## Install
 
+### Prerequisites
+
+- Chrome / Edge / Brave **111+** (`color-mix()` in the dark theme) or Firefox
+  **128+** (`optional_host_permissions`)
+- Node.js **18+**, Python **3** and `rsync` — only needed to run the tests or to
+  build the Firefox package
+- A Bitbucket Cloud repository and a scoped API token (see
+  [Authentication](#authentication)); you enter those later in the options page
+
 ### Chrome / Edge / Brave
 
+No build step is needed.
+
 1. Open `chrome://extensions` and enable **Developer mode**.
-2. **Load unpacked** → select this folder (or `dist/chrome` after packaging).
+2. **Load unpacked** → select this repository root (`manifest.json` must be at
+   the top level). If you already ran `./scripts/package.sh`, select
+   `dist/chrome` instead.
 3. The options page opens automatically because nothing is configured yet.
+   Enter the workspace/repository slug and token there — see
+   [Configuration](#configuration).
 
 ### Firefox (128+)
 
-Firefox does not accept `background.service_worker` in MV3, so it needs the Firefox
-manifest. Build the Firefox package and load it temporarily:
+Firefox does not accept `background.service_worker` in MV3, so it needs the
+separate Firefox manifest. Build both packages first:
 
 ```bash
-./scripts/package.sh
+./scripts/package.sh        # writes dist/chrome and dist/firefox
 ```
 
+If the script is not executable, run `chmod +x scripts/package.sh` first.
+
 1. Open `about:debugging#/runtime/this-firefox`.
-2. **Load Temporary Add-on…** → pick `dist/firefox/manifest.json`.
+2. **Load Temporary Add-on…** → select `dist/firefox/manifest.json`.
 3. Approve the requested host access for `api.bitbucket.org` if Firefox asks.
 
 For a permanent install, sign the `dist/firefox` folder with
@@ -73,8 +90,48 @@ For a permanent install, sign the `dist/firefox` folder with
 (or load it as an unsigned add-on in Firefox Developer Edition / ESR with
 `xpinstall.signatures.required=false`).
 
-> Chrome requires **111+** (`color-mix()` in the dark theme), Firefox **128+**
-> (`optional_host_permissions`).
+### Verify
+
+```bash
+node --test tests/*.test.mjs
+test -f manifest.json && echo "Chrome manifest OK"
+./scripts/package.sh && test -f dist/firefox/manifest.json && echo "Firefox manifest OK"
+```
+
+After editing extension code, reload it in `chrome://extensions` (or
+`about:debugging`) and reload the dashboard tab.
+
+## AI install prompt (copy & paste)
+
+Paste this into your AI assistant to have it install and verify the extension.
+It deliberately does not handle Bitbucket credentials.
+
+```text
+Install the ReviewBoard Bitbucket code-review browser extension in this repository.
+
+Context:
+- The repository root is the folder containing manifest.json (Chrome MV3) and
+  manifest.firefox.json (Firefox MV3).
+- Chrome needs no build step. Firefox needs ./scripts/package.sh because MV3
+  service workers are not supported there.
+- Node.js 18+, Python 3 and rsync are needed for tests/packaging.
+
+Tasks:
+1. Check that manifest.json and manifest.firefox.json exist. If not, stop and
+   report it.
+2. Run `node --test tests/*.test.mjs` and report the result. If Node is missing,
+   say so and continue with the packaging check if possible.
+3. Run `./scripts/package.sh` (run `chmod +x scripts/package.sh` first if it is
+   not executable). Verify that dist/chrome/manifest.json and
+   dist/firefox/manifest.json exist.
+4. Do NOT ask for Bitbucket email, token, workspace or repository slug — I will
+   enter those in the options page myself.
+5. Because loading an unpacked extension requires browser UI interaction, give
+   me the exact short steps for Chrome/Edge and Firefox after packaging succeeds.
+
+Report a concise summary of commands run, verification results and the remaining
+manual steps.
+```
 
 ---
 
@@ -108,7 +165,7 @@ Open the options page via the settings (gear) button on the dashboard, the exten
 | --- | --- |
 | **Authentication** | Email + API token (Basic) or access token (Bearer). |
 | **Atlassian account email** | Required for Basic auth. |
-| **API token** | The secret. Stored in `storage.local`. |
+| **API token** | Persisted in this browser profile's `storage.local`, not `storage.sync`. Extension storage is not encrypted as a separate secret vault. |
 | **Workspace / Repository slug** | `acme` + `demo`. You can paste `acme/demo` or the full URL `https://bitbucket.org/acme/demo` into either field — it is split automatically. Use the URL slug, not the display name. |
 | **API base URL** | `https://api.bitbucket.org/2.0` by default. Change only for a proxy/test double; the browser then asks for host access. |
 | **Refresh interval** | 15–3600 s, default 120. The dashboard honours it exactly; background alarms are clamped to ≥1 min and act only as a fallback when no dashboard tab is open. |
@@ -121,9 +178,11 @@ Open the options page via the settings (gear) button on the dashboard, the exten
 
 ### Token safety
 
-The credentials are stored unencrypted in `chrome.storage.local`, like every extension
-secret. Use a dedicated read-only token, scope it to the workspace you monitor, and revoke
-it when the wallboard is retired.
+The credentials are stored in this browser profile's `storage.local` (not synchronized
+through `storage.sync`). This storage is not encrypted as a separate secret vault.
+ReviewBoard restricts it to trusted extension contexts where supported. Use a dedicated
+read-only token, scope it to the workspace you monitor, and revoke it when the wallboard
+is retired.
 
 ---
 
